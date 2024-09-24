@@ -10,5 +10,6 @@ Each week will have one folder containing three folders:
 **Weekly Folders:**  
 - [Week 2](https://github.com/OCN-682-UH/Smith/tree/main/Week_02)
 - [Week 3](https://github.com/OCN-682-UH/Smith/tree/main/Week_03)
+- [Week 4](https://github.com/OCN-682-UH/Smith/tree/main/Week_04)
   
 
