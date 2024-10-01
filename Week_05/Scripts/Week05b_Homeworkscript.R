@@ -25,8 +25,8 @@ CondData<-read_csv(here("Week_05","Data", "CondData.csv"))
 DepthData<-read.csv(here("Week_05","Data","DepthData.csv"))
 
 ###
-glimpse(CondData)
-glimpse(DepthData)
+glimpse(CondData) #viewing data
+glimpse(DepthData)#viewing data 
 
 ### cleaning CondData to match DepthData
 CondData$date<- mdy_hms(CondData$date) %>% #making this a date
