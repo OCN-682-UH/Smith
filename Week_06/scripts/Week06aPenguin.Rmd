@@ -1,0 +1,47 @@
+---
+title: "Week06aPenguin"
+author: "Megan Smith"
+date: '2024-10-01'
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: darkly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Intro to penguins
+
+Today we are going to work with penguin data to learn *rMarkdown*
+
+# Load Libraries
+
+```{r}
+library(palmerpenguins)
+library(here)
+library(tidyverse)
+```
+
+# Inspect the data
+
+```{r}
+glimpse(penguins)
+```
+
+```{r}
+penguins %>% 
+  ggplot(aes(x=bill_length_mm,
+             y=bill_depth_mm,
+             color=species)) +
+  geom_point()+
+  geom_smooth(method='lm')+
+  labs(x ="Bill Length (mm)",
+       y= "Bill Depth (mm)",)+
+  theme_bw()
+
+```

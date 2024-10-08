@@ -1,0 +1,78 @@
+---
+title: "Week06b_HomeworkScript"
+author: "Megan Smith"
+date: '2024-10-08'
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+### Load libraries
+```{r}
+library(tidyverse)
+library(here)
+library(kableExtra)
+library(ggcorrplot)
+```
+
+### **_Load Data_**
+- Using data from Week 4
+```{r}
+ChemData<-read_csv(here("Week_06","data", "chemicaldata_maunalua.csv"))
+head(ChemData)
+```
+### **_Cleaning Data_**
+```{r}
+ChemData_clean<-ChemData %>%
+  drop_na() %>% #removing nas
+  separate(col = Tide_time, # seperating Tide and Time 
+           into = c("Tide","Time"), # new column names
+           sep = "_" )
+ChemData_long<- ChemData_clean %>%
+  filter(Time == "Night") %>% # filtering out just Night
+  pivot_longer(cols= c(Temp_in, Salinity, pH),# making a long data set with selcted variables
+               names_to = "Variables", # naming column for Variables
+               values_to = "Values") %>% #namine column for values
+ group_by(Tide, Variables) %>% # how I want them grouped
+  summarise(mean_vals = mean(Values, na.rm = TRUE)) %>%
+ pivot_wider(names_from = Variables,#to look how I want in table
+            values_from = mean_vals)
+
+ 
+```
+
+
+
+### **_Creating a summary table_**
+```{r}
+ChemData_long %>% #chosing this data set to make a plot
+  kbl() %>% 
+  kable_material() #changing the theme of the table
+```
+
+### **_Creating a plot_**
+```{r,ChemPlot,out.width="70%", fig.cap="ChemData Correlation Plot",dev="pdf"}
+
+ChemData_clean %>% #pulling from clean data set
+    ggplot(aes(x =Site, y =Temp_in))+ #selcting site and temp
+  geom_violin() + #choosing Violing
+  geom_boxplot(width = 0.08, color="grey") + #making boxplot grey
+  labs(title="Average Temp (C) by site",#Naming labels
+       x="Site", y="Temperature") +
+    theme_bw() #changing theme
+
+  
+           
+
+
+```
+
