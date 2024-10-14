@@ -1,0 +1,74 @@
+---
+title: "Week07a_Homework"
+author: "Megan Smith"
+date: '2024-10-14'
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+# Load Libraries
+```{r}
+library(tidyverse)
+library(here)
+library(maps)
+library(mapproj)
+library(mapdata)
+library(lubridate)
+```
+
+# Bringing in data
+```{r}
+bigfootraw<-read.csv(here("Week_07","data","bigfoot.csv")) #bigfoot data
+states<- map_data("state") #states data needed to make a map
+```
+
+# Looking over data
+```{r}
+glimpse(bigfootraw)
+glimpse(states)
+```
+# Data wrangling
+```{r}
+states$region <- str_to_title(states$region) #changing all states region names to uppercase first letter to match bigfoot data
+bigfootmainland<- bigfootraw %>% 
+  filter(state != "Alaska") %>% #removing Alaska for a cleaner map
+  mutate(date= ymd(date), #making dates, dates
+    year = year(date)) #creating new column of year
+```
+
+
+
+# Plotting Data
+```{r,Bigfoot_plot,out.width="70%", fig.cap="Bigfoot_sighting_map"}
+ggplot()+
+  geom_polygon(data =  subset (states,long >-130 ), # selecting states and only >-130 to remove non mainland data points
+               aes(x = long,
+                   y = lat,
+                   group = group),
+               fill= NA, # do not want the map to be filled
+               color = "darkgrey", #changing color of line of map
+               linewidth=0.5)+ #making line thinner for readability
+  geom_point(data = subset(bigfootmainland, 
+                           longitude >-130 & season !="Unknown" & # removing Unknown season
+                             classification != "Class C" & # selecting only for Class A and B
+                             year >= 2010 & year <= 2020), # selecting only years 2010-2020
+             aes(x = longitude,
+                 y = latitude,
+                 color= classification)) + # color will be for either Class A or B
+  coord_map()+
+  theme_void() + # void to remove long and lat lines
+  labs(title="Class A & B Bigfoot sightings in the US from 2010-2020")+ #adding a title 
+  facet_wrap(~ season) # facet wrapping for each season
+```
+
+
