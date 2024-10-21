@@ -215,3 +215,4 @@ library(ggdogs)
 ggplot(mtcars) +
   geom_dog(aes(mpg, wt), dog = "pug", size = 5)
 
+
