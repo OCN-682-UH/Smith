@@ -1,0 +1,238 @@
+---
+title: "Week 8b Lecture"
+author: "Megan Smith"
+date: '2024-10-18'
+output: rmdformats::downcute
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+# Week 8b Lecture: Advanced plotting 
+
+```{r}
+library(tidyverse)
+library(here)
+library(patchwork)
+library(ggrepel)
+library(gganimate)
+library(magick)
+library(palmerpenguins)
+```
+
+# Patchwork: easily bring plots together
+ these would be plots that cant be mixed using facet
+```{r}
+# plot 1
+p1<-penguins %>%
+  ggplot(aes(x = body_mass_g, 
+             y = bill_length_mm, 
+             color = species))+
+  geom_point()
+p1
+```
+```{r}
+p2<-penguins %>%
+  ggplot(aes(x = sex, 
+             y = body_mass_g, 
+             color = species))+
+  geom_jitter(width = 0.2)
+p2
+```
+```{r}
+p1 +p2
+```
+
+```{r}
+p1+p2 +
+  plot_layout(guides = 'collect') #this just makes one lengend (guides same as legend)
+```
+Adding annotations **this will be helpful**
+```{r}
+p1+p2 +
+  plot_layout(guides = 'collect')+
+  plot_annotation(tag_levels = 'A')
+```
+Stacked instead of next to each other
+```{r}
+p1/p2 +
+  plot_layout(guides = 'collect')+
+  plot_annotation(tag_levels = 'A')
+```
+https://raw.githack.com/OCN-682-UH/Fall_2024/main/Week_08/16_AdvancedPlotting.html#11
+
+#ggrepel: easy and clear labels for plots
+Using mtcars thats already part of tidyverse
+
+mtcar plot: labels are on top of each other
+```{r}
+ggplot(mtcars, aes(x = wt, 
+                   y = mpg, 
+                   label = rownames(mtcars))) + #taking row names for points 
+  geom_text() + # creates a text label
+  geom_point(color = 'red')
+```
+geom_text_repel
+```{r}
+ggplot(mtcars, aes(x = wt, 
+                   y = mpg, 
+                   label = rownames(mtcars))) +
+  geom_text_repel() + # repel them
+  geom_point(color = 'red')
+```
+geom label puts a box around
+```{r}
+ggplot(mtcars, aes(x = wt, 
+                   y = mpg, 
+                   label = rownames(mtcars))) +
+  geom_label_repel() + # repel them
+  geom_point(color = 'red')
+```
+More on grepple: https://ggrepel.slowkow.com/articles/examples.html
+
+# gganimate: animates figures
+More examples: https://gganimate.com/index.html
+This is our basic plot with all the years
+```{r}
+penguins %>%
+ggplot(aes(x = body_mass_g, 
+            y = bill_depth_mm, 
+            color = species)) +
+  geom_point()
+```
+
+Have to add transition so it knows what to move 
+```{r}
+penguins %>%
+ggplot(aes(x = body_mass_g, 
+            y = bill_depth_mm, 
+            color = species)) +
+  geom_point() +
+  transition_states(
+     year, # what are we animating by
+     transition_length = 2, #The relative length of the transition.
+     state_length = 1 # The length of the pause between transitions
+   )
+```
+Adding more aes to plot: Below is bounce in out 
+Other options are linear (default), sine, circular
+```{r}
+
+penguins %>%
+ggplot(aes(x = body_mass_g, 
+            y = bill_depth_mm, 
+            color = species)) +
+  geom_point() +
+  transition_states(
+     year, # what are we animating by
+     transition_length = 2, #The relative length of the transition.
+     state_length = 1 # The length of the pause between transitions
+   )+
+  ease_aes("bounce-in-out")
+```
+
+Adding labels to transition
+```{r}
+penguins %>%
+ggplot(aes(x = body_mass_g, 
+            y = bill_depth_mm, 
+            color = species)) +
+  geom_point() +
+  transition_states(
+     year, # what are we animating by
+     transition_length = 2, #The relative length of the transition.
+     state_length = 1 # The length of the pause between transitions
+   )+
+  ease_aes("sine-in-out") +
+  labs(title = 'Year: {closest_state}')
+```
+ Saving as agif -> anim_save
+ 
+ More gganimate here:https://raw.githack.com/OCN-682-UH/Fall_2024/main/Week_08/16_AdvancedPlotting.html#24
+```{r}
+penguins %>%
+ggplot(aes(x = body_mass_g, 
+            y = bill_depth_mm, 
+            color = species)) +
+  geom_point() +
+  transition_states(
+     year, # what are we animating by
+     transition_length = 2, #The relative length of the transition.
+     state_length = 1 # The length of the pause between transitions
+   )+
+  ease_aes("sine-in-out") +
+  labs(title = 'Year: {closest_state}') +
+  anim_save(here("Week_08","output","mypengiungif.gif"))
+```
+
+#magick: advanced image processing **this will be very helpful for my prohect**
+image_read= is how you will bring the image in 
+```{r}
+penguin<-image_read("https://pngimg.com/uploads/penguin/pinguin_PNG9.png")
+penguin
+```
+Now to put it on plot- have to save as png
+```{r,penguinplot,dev="png"}
+penguins %>%
+ggplot(aes(x = body_mass_g, 
+            y = bill_depth_mm, 
+            color = species)) +
+  geom_point()
+```
+Whatever you want as the background goes first
+image_composite is how you put them on top: backgroud goes first, second layer after 
+
+```{r}
+penplot<-image_read(here("Week_08","output","penguinplot.png"))
+out <- image_composite(penplot, penguin, offset = "+70+30") #offset is where you want the penguin to be
+out
+```
+
+```{r}
+pengif<-image_read("https://media3.giphy.com/media/H4uE6w9G1uK4M/giphy.gif")
+outgif <- image_composite(penplot, pengif, gravity = "center")
+animation <- image_animate(outgif, fps = 10, optimize = TRUE)
+animation
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+
+```
+
