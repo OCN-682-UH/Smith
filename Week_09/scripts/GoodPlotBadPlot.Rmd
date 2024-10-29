@@ -1,0 +1,116 @@
+---
+title: "GoodPlotBadPlot"
+author: "Megan Smith"
+date: "2024-10-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+The figures and coding below will take you on a journey of how many hours a random selection of animals sleep.    
+ **Caution, some figures below may cause anxiety and or discomfort**
+ 
+  ---
+#### Data
+
+ The data being used is from the ggplot2 package called msleep and is an updated and expanded version of the mammals sleep dataset. Updated sleep times and weights were taken from V. M. Savage and G. B. West. A quantitative, theoretical framework for understanding mammalian sleep. Proceedings of the National Academy of Sciences, 104 (3):1051-1056, 2007. 
+ 
+  During this journey, we will soley looking at total sleep and awake times
+  
+##### First we will load in needed libraries 
+```{r}
+library(tidyverse)
+library(here)
+library(praise)
+```
+
+##### Next we will read in our data and glimpse it
+```{r}
+glimpse(msleep)
+```
+
+#### Next we will clean the data to remove NAs, select names less than 11 and also take a random selection of animals
+```{r}
+sleepNoNA<- msleep %>% 
+  drop_na (sleep_total, name) #removing NAs in sleep_totals and name
+sleep <- sleepNoNA %>%
+  filter(nchar(name) < 11)
+sleep <- sleep %>% 
+  sample_n(size=35) # just selecting a random 35 animals 
+```
+
+Then we will make time awake and time asleep a percentage value
+```{r}
+sleep<- sleep %>% 
+  mutate(per_sleep=(sleep_total/24)*100,
+         per_awake = (awake/24)*100) %>% 
+  pivot_longer(cols = c(per_sleep, per_awake),
+               names_to = "day",
+               values_to = "percentage") %>% 
+  group_by(name) %>% 
+  mutate(cumsum_per = cumsum(percentage),
+         pos= percentage/ 2 + lag(cumsum_per, default = 0))
+```
+
+
+### CAUTION: THIS MAY CAUSE PAIN
+ Making our bad plot
+```{r}
+ggplot(sleep, aes(x = "", y = percentage, fill = day)) +
+  geom_bar(stat = "identity", width = 1.5) + # I heard bar plots are the best 
+  coord_polar("y") +
+  facet_wrap(~ name) +
+  labs(title = "% of day each animal spends awake and asleep") +
+  theme_void()+
+  theme(plot.title = element_text(color = "yellow", size = 16, face = "bold"), # everyone loves yellow font
+             legend.title = element_text(color = "lightblue"), #can you see this, I hope not
+             legend.text = element_text(color = "lightblue"),
+        plot.background = element_rect (fill="orange", color= NA),# wow this background hurts my eyes
+        panel.background =  element_rect(fill= "tan", color = NA),# maybe this tan will help
+        strip.text = element_text(size = 12, face= "bold")) + #again how can this be as unreadable 
+  scale_fill_manual(values = c("per_awake" = "green", "per_sleep" = "red"), #worst colors ever
+                    labels = c("per_awake" = "Awake", "per_sleep" = "Asleep")) + #changing label name
+  geom_text(aes(y = pos, label = paste0(round(percentage, 1), "%")), color = "white") #making this as non-readable as possible
+
+```
+
+
+##### Congratulations! You made it through that 
+```{r}
+praise()
+```
+
+
+##### Now we will move onto a better representation of the data
+```{r fig.width=8, fig.height=8}
+ggplot(sleep, aes(x = reorder(name, -sleep_total), y = sleep_total)) +
+  geom_segment(aes(xend = reorder(name, -sleep_total), yend = 0), #putting in a better order to read
+               color = "#aeb6bf",
+               size = 1, 
+               alpha = 0.5) + 
+  geom_point(color="#009688", size = 3, show.legend = TRUE) +  # point for hours slept
+  labs(title="Total hours of sleep per day in animals",
+       x="", y="Hours Slept",
+       caption="Source: Msleep data from ggplot2") +
+  theme_light() +
+  theme(axis.title.y = element_blank(),
+        axis.ticks.x = element_line(color = "#4a4e4d"),
+        text = element_text(family = "sans", color = "#4a4e4d"), # who doesnt love sans
+        strip.text.y.left = element_text(angle = 0),
+        panel.background = element_rect(fill = "white", color = "white"),
+        strip.background = element_rect(fill = "white", color = "white"),
+        strip.text = element_text(color = "#4a4e4d", family = "sans"),
+        plot.background = element_rect(fill = "white", color = "white"),
+        panel.spacing = unit(0, "lines"),
+        plot.margin = margin(1, 1, .5, 1, "cm")) +
+   scale_y_continuous(expand = c(0, 0), limits= c(0,20)) +  # starting axis at 0 and making sure it goes until 20
+   coord_flip()
+```
+
+
+
