@@ -1,0 +1,74 @@
+---
+title: "Functions"
+author: "Megan Smith"
+date: "2024-10-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+This code is for Function Homework for week 9
+
+##### Load Libraries
+```{r}
+library(tidyverse)
+library(here)
+```
+
+For this homework I will be using the msleep data set
+
+```{r}
+glimpse(msleep)
+```
+ Function to convert hours to minutes
+```{r}
+hour_minutes <- function(hours) {
+  mins <- hours * 60
+  return(mins)
+}
+
+
+hour_minutes(3)  # testing function
+```
+
+ Applying function to msleep data
+```{r}
+sleep_tot_min<- msleep %>% 
+  mutate(sleep_total_mins= hour_minutes(sleep_total),
+         awake_min= hour_minutes(awake)) %>% 
+  select(name, sleep_total_mins, sleep_total,awake_min,awake, bodywt)
+glimpse(sleep_tot_min)
+```
+ Next making a plot function 
+```{r}
+plotfun<- function(data=msleep, x,y, line=TRUE) {
+  
+  ggplot(data,aes(x={{x}}, y={{y}}))+
+  geom_point()+
+  theme_bw()
+    
+  }
+```
+ 
+ Testing plot function
+```{r}
+plotfun(x=bodywt, y=brainwt)
+```
+Thats not great, lets try something else
+```{r}
+plotfun(x=vore, y=brainwt)
+```
+ 
+ 
+ 
+ ##### All in all, I am not very comfortable with functions and need to practice them more. 
+ 
+ 
+ 
+ 
+ 
