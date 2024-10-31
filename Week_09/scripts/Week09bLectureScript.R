@@ -49,7 +49,8 @@ star_counts %>%
 star_counts %>%
   ggplot(aes(x = fct_reorder(species, n), y = n))+ # reorder the factor of species by n
   geom_col() # goes from lowest n to highest n
-
+color = fct_reorder2(income_quintile,year,income_dollars_sum)))+
+  
 #making same plot descending 
 star_counts %>%
   ggplot(aes(x = fct_reorder(species, n, .desc = TRUE), y = n))+ # reorder the factor of species by n
