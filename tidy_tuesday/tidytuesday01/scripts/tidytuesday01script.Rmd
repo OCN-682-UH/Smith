@@ -1,0 +1,112 @@
+---
+title: 'Tidy Tuesday: Week 44'
+author: "Megan Smith"
+date: "2024-11-02"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+# Monster Movie
+
+ This data goes from the [Monster Movies](https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-10-29/readme.md) data set. 
+ 
+# Load libraries
+```{r}
+library(tidyverse)
+library(here)
+library(naniar) # new package that shows missing data 
+```
+ 
+# Loading data
+```{r}
+tt_10_29 <- tidytuesdayR::tt_load('2024-10-29')
+tt_genres<- tt_10_29$monster_movie_genres
+tt_movies<-tt_10_29$monster_movies
+```
+ 
+# Exploring data 
+
+```{r}
+glimpse(tt_movies) #just glimpsing this data since I wont use the other one
+```
+# New package 
+
+  [Naniar](https://cran.r-project.org/web/packages/naniar/vignettes/getting-started-w-naniar.html) is a package that allows you to visualize missing data 
+  
+  Now I know where missing data is and I can continue cleaning.
+```{r visual_missing, dev= "png"}
+gg_miss_var(tt_movies) #super cool
+```
+
+# Cleaning Data
+
+ I have decided to look at genre type from 2000-2024.
+ 
+  - First I will take only the first genre listed as main genre
+  - Then I will create a "True Horror" list to just keep the spooky stuff
+  - Merge similar genre types
+  
+```{r}
+movies_clean <- tt_movies %>%
+  filter(!is.na(genres)) %>% #removing NAs
+  mutate(main_genre = sub(",.*", "", genres)) #genres have more than one, this is selecting just the first as the "main" genre
+
+true_horror<-c("Horror", "Crime", "Documentary","Thriller","Sci-fi","Mystery","Drama","Biography","Adventure","Action") #selecting only what I believe is true horror
+
+genre_year<-movies_clean %>% 
+  filter(year >1999) %>% # filtering out 2000 and above
+  select(year,main_genre) %>% # selecting what I need
+  filter(main_genre %in% true_horror) %>% # filtering our non horror
+  mutate(main_genre = case_when( # merging similar genres
+    main_genre %in% c("Action","Adventure") ~ "Action-Adventure",
+    main_genre %in% c("Crime", "Drama") ~ "Crime-Drama",
+    main_genre %in% c("Biography", "Documentary") ~"Biography-Documentary",
+    main_genre %in% c("Mystery","Thriller") ~"Mystery-Thriller",
+    main_genre == "Horror" ~ "Horror")) %>% 
+  group_by(year) # grouping by year
+```
+
+# Prepairing for plotting 
+
+ I want to make a proportion stacked bar plot, so I need to wrangle the data. 
+ 
+```{r}
+genre_peryear<-genre_year %>% 
+  add_count(year,main_genre) %>% # making these a counts so ggplot can make them into bar plot
+  add_count(year, name = "year_n") %>% 
+  group_by(year,main_genre) # grouping for plotting
+summary(genre_peryear) # another way to glimpse this data and give me min/maxs
+```
+ 
+# Time to plot
+
+ I have never made a stacked bar plot that is a proportion. 
+
+```{r genre_plot, dev= "png"}
+ggplot(genre_peryear, aes(fill=main_genre,y=year_n, x=year))+
+  geom_bar(position="fill", stat="identity") + # making this stacked as a %
+  labs(title= "Genre Composition of True Horror films from 2000-2023", # adding a title
+       x="Year", #changing title names 
+       y="Proportion of Genre",
+       fill="Genre")+ #changing legend names
+  scale_y_continuous(expand = c(0,0),
+                     labels= scales::percent)+ # axis will now be %
+  scale_x_continuous(expand = c(0,0), 
+                     limits =c(1999,2025), # had to choose 1999 so it would show 2000
+                     breaks = seq(2000, 2024, by = 2))+ # all for readability
+  scale_fill_manual(values=c("#34073d","#8179dd","#923e4d","#fb8654","#aec5a8"))+ #spooky season colors 
+  theme_classic()+
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1)) # tilting values for readability 
+```
+
+ 
