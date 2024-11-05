@@ -1,0 +1,112 @@
+---
+title: 'Tidy Tuesday: Week 45'
+author: "Megan Smith"
+date: "2024-11-05"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+# Load Libraries 
+```{r}
+library(tidyverse)
+library(here)
+library(maps)
+```
+
+# Load in Data 
+```{r echo = T, results = 'hide'}
+tt_1105 <- tidytuesdayR::tt_load('2024-11-05')
+
+dem_data<-tt_1105$democracy_data
+
+glimpse(dem_data)
+```
+# Cleaning Data
+
+ - I want to see the average age of accesion by country
+
+```{r}
+dem_data <- dem_data %>%
+  mutate(pres_age_at_acc = if_else(!is.na(president_accesion_year) & !is.na(president_birthyear), # creating new column for age at acc
+                                         president_accesion_year - president_birthyear, #accesion year - birth year to come up with age at succession 
+                                         NA_real_),
+         mon_age_at_acc = if_else(!is.na(monarch_accession_year) & !is.na(monarch_birthyear),# same for monarchs
+                                       monarch_accession_year - monarch_birthyear,
+                                       NA_real_))
+```
+
+- Now getting the mean age of each country
+```{r}
+avg_age_acc <- dem_data %>%
+  group_by(country_name) %>% # grouping to get average for each country
+  summarize(avg_pres_age_at_acc = mean(pres_age_at_acc, na.rm = TRUE),
+            avg_mon_age_at_acc = mean(mon_age_at_acc, na.rm = TRUE))
+```
+
+
+# Calling in Map Data 
+
+ 
+```{r}
+world <- map_data("world")
+```
+
+- Combining president and monarch average age of accession 
+```{r}
+avg_age_acc <- avg_age_acc %>%
+  mutate(avg_age_of_accession = rowMeans(select(., avg_pres_age_at_acc, avg_mon_age_at_acc), na.rm = TRUE)) # rowMeans to calc means across columns 
+```
+
+- Changing country_name to region to match world data
+```{r}
+avg_age_acc <- avg_age_acc %>%
+  select(region =country_name, avg_age_of_accession)
+```
+
+- Attempting to match some of the country names to match world data 
+```{r}
+avg_age_acc <- avg_age_acc %>%
+  mutate(region = recode(str_trim(region), # changing names 
+                         "United States" = "USA",
+                         "United Kingdom" = "UK",
+                         "Korea (Rep.)" = "South Korea",
+                         "Congo (Dem. Rep.)" = "Democratic Republic of the Congo",
+                         "Congo (Rep.)" = "Republic of Congo",
+                         "Saint Barthélemy" = "Saint Barthelemy",
+                         "Côte d'Ivoire" = "Ivory Coast")) 
+```
+
+# Merging World Data with Dem Data
+```{r}
+mapmerge<-inner_join(world,avg_age_acc, by= "region")
+
+```
+
+# Map Figure
+
+- Something new!
+  - I have not made a plot like this using the world data 
+   - [Here](https://sarahpenir.github.io/r/making-maps/) is where I learned how to make the below figure
+```{r avg_age_accession_map, dev= "png",fig.width=8, fig.height=6}
+plain <- theme(
+  axis.text = element_blank(),
+  axis.line = element_blank(),
+  axis.ticks = element_blank(),
+  panel.border = element_blank(),
+  panel.grid = element_blank(),
+  axis.title = element_blank(),
+  panel.background = element_rect(fill = "white"),
+  plot.title = element_text(hjust = 0.5)
+)
+ggplot(data = mapmerge, mapping = aes(x = long, y = lat, group = group)) +  # cant forget group=group
+  coord_fixed(1.3) +
+  geom_polygon(aes(fill = avg_age_
