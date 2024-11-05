@@ -109,4 +109,11 @@ plain <- theme(
 )
 ggplot(data = mapmerge, mapping = aes(x = long, y = lat, group = group)) +  # cant forget group=group
   coord_fixed(1.3) +
-  geom_polygon(aes(fill = avg_age_
+  geom_polygon(aes(fill = avg_age_of_accession)) + # fill with average age 
+  scale_fill_distiller(palette ="RdBu", direction = -1) + # from above site 
+  labs(title= "Average Age of Accession by Country", # changing title 
+      fill="Average Age",
+      caption= "Grey=NA")+ #changing legend title
+  plain # adding above code
+```
+
