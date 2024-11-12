@@ -2,10 +2,7 @@
 title: "Tidy Tuesday 11-12"
 author: "Megan Smith"
 date: "2024-11-12"
-output: 
-  html_document:
-    toc: TRUE
-    toc_float: TRUE
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
