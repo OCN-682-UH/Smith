@@ -1,0 +1,13 @@
+name: GAK-shinyapp
+title: GAK-shinyapp
+username: meg-n-smith
+account: meg-n-smith
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13388869
+bundleId: 9387477
+url: https://meg-n-smith.shinyapps.io/GAK-shinyapp/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: GAK1_mooring_clean.csv
