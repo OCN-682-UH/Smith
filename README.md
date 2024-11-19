@@ -20,3 +20,5 @@ Each week will have one folder containing three folders:
 - [Week 11](https://github.com/OCN-682-UH/Smith/tree/main/Week_11)
 - [Week 12](https://github.com/OCN-682-UH/Smith/tree/main/Week_12)
 - [Week 13](https://github.com/OCN-682-UH/Smith/tree/main/Week_13)
+- [Shiny App](https://github.com/OCN-682-UH/Smith/tree/main/GAK-shinyapp)
+
