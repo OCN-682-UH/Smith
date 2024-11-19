@@ -1,0 +1,12 @@
+name: MBIO_shinytest
+title: MBIO_shinytest
+username: meg-n-smith
+account: meg-n-smith
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13319908
+bundleId: 9353873
+url: https://meg-n-smith.shinyapps.io/MBIO_shinytest/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
