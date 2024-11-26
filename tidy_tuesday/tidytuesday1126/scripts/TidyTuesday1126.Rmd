@@ -1,0 +1,78 @@
+---
+title: "TidyTuesday11/26"
+author: "Megan Smith"
+date: "2024-11-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+Loading Libraries
+```{r}
+library(tidytuesdayR)
+library(tidyverse)
+library(ggridges)
+library(here)
+
+
+
+```
+
+Calling in Tidy Tuesday Data
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2024-11-19') #bringing in data
+
+episode_metrics <- tuesdata$episode_metrics #renaming data
+
+glimpse(episode_metrics) # looking over data
+```
+
+Creating a custom Bobs Burgers Pallete 
+```{r}
+bobs_col<-c(
+  "1"= "#f0262a",
+  "2"="#f172a9",
+  "3"="#95d244",
+  "4"= "#fcdd60",
+  "5"="#9ac7e8",
+  "6"="#9ba54a",
+  "7"="#c08653",
+  "8"= "#a4b8df",
+  "9"= "#324a70",
+  "10"="#f2d477",
+  "11"= "#f24344",
+  "12"="#f2a679",
+  "13"= "#c7c5a2",
+  "14"= "#4063a6"
+  
+)
+```
+
+Creating a ridgeline plot of unique words per season
+
+I have never made a ridgeline plot and I thought this would be a great data set for it. 
+
+ I also attempted to add a gif of Tina twerking, but couldnt not get it to work with the magick package, so just try and imagine it there. 
+```{r bobplot, dev="png"}
+ggplot(episode_metrics, aes(x= unique_words, y= factor(season, levels= rev(unique(season))), fill= factor(season)))+
+  geom_density_ridges (scale= 3)+ # how wide I wanted the ridge
+  theme_ridges ()+
+  scale_fill_manual(values= bobs_col)+ #using the custom colors 
+  theme_minimal()+
+    theme(
+    legend.position = "none", #removing legend
+    panel.spacing = unit(0.1, "lines"), #giving a little space
+    strip.text.x= element_text(size=8) #changing font size
+  ) + 
+  labs( x= "Unique Words",
+        y= "Season",
+        title= "Number of Unique Words in Bob's Burgers Per Season")
+```
+
+
+

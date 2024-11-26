@@ -5,7 +5,7 @@ account: meg-n-smith
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13388869
-bundleId: 9387477
+bundleId: 9388741
 url: https://meg-n-smith.shinyapps.io/GAK-shinyapp/
 version: 1
 asMultiple: FALSE
