@@ -1,0 +1,87 @@
+---
+title: "TinyTuesday12/3"
+author: "Megan Smith"
+date: "2024-11-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+Load Libraries
+```{r}
+library(tidytuesdayR)
+library(tidyverse)
+library(here)
+library(ggmap) #for ggmaps
+library(hrbrthemes)
+library(paletteer)
+
+```
+
+Pulling in Tidy Tuesday Data 
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2024-12-03')
+
+A64_traffic <- tuesdata$A64_traffic
+```
+
+Exploring Data
+```{r, results= "hide"}
+glimpse(A64_traffic)
+unique(A64_traffic$SiteId)
+```
+
+
+Making map of location of Road Sensors
+```{r road_sensor_map,dev="png"}
+site<-data.frame(lon= -0.6946696, lat= 54.1581) # coordinates of location
+londmap<-get_map(site, zoom= 10) # creating map with those coordinates
+ggmap(londmap)+ #map layer
+  geom_point(data=A64_traffic, 
+             aes(x=Longitude, y=Latitude), # using geom point to mark road sensors
+             size=3)+ #size of point
+  labs(x="Longitude", #relabeling labels 
+       y="Latitude",
+       title="Location of Road Sensors")
+```
+
+
+
+
+Cleaning Data to Create the Figure
+```{r}
+A64_traffic <- A64_traffic %>% select(-"Avg mph") # remove 'Avg mph' column
+
+speed_cols <- names(A64_traffic)[grep("mph", names(A64_traffic))] # identify columns with 'mph'
+
+speed_data <- A64_traffic %>%
+  pivot_longer(cols = all_of(speed_cols), # pivot these columns into long format
+               names_to = "Speed", 
+               values_to = "Amount") %>%
+  filter(!is.na(Amount)) # remove rows with NA in the 'Amount' column
+
+```
+
+Creating Speed Distribution Plot
+
+ For my something new, I used a new to me color pallete. 
+  [On this](https://r-graph-gallery.com/color-palette-finder) site it allows you to filter out color palettes  based on multiple different search criteria. For this figure I needed a lot of colors, so I filtered out a palette that had 14 colors. 
+```{r speed_data, dev="png"}
+ggplot(speed_data, aes(x = `Report Date`, y = Amount, fill = Speed)) + # data I want to plot 
+  geom_bar(stat = "identity") + # selecting bar chart
+  scale_fill_paletteer_d("impressionist.colors::korenveld_onder_onweerslucht") + # new color palette from above 
+  theme_bw() + #bw theme 
+  labs(title = "Speed Distribution Over Time", # changing the labels 
+       x = "Date", 
+       y = "Total Cars Passing Sensor") 
+
+
+```
+
+
+
