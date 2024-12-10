@@ -1,0 +1,80 @@
+---
+title: "TidyTuesday 12/09/2024"
+author: "Megan Smith"
+date: "2024-12-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.path = "../output/")
+```
+
+Load Libraries
+```{r}
+library(here)
+library(tidyverse)
+library(tidytuesdayR)
+library(plotly)
+library(RColorBrewer)
+```
+
+Bring in data 
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2024-11-26') # pulling in data from tidy tuesday
+```
+Subsetting the data 
+
+```{r}
+cbp_resp <- tuesdata$cbp_resp
+cbp_state <- tuesdata$cbp_state
+```
+
+Glimpsing the data 
+```{r}
+glimpse(cbp_resp)
+glimpse(cbp_state)
+```
+Gor this data set I want to look at total encounters by year and by demographic. 
+
+Cleaning data 
+```{r}
+combined_data <- bind_rows(cbp_state, cbp_resp) # combining the data sets 
+
+demographic_data <- combined_data %>% # making a demographic data set
+  group_by(fiscal_year, demographic) %>% # grouping year and demographic
+  summarise(total_encounters = sum(encounter_count, na.rm = TRUE)) %>%  # summarizing total encounters by the grouping 
+  mutate(demographic = recode(demographic, "FMUA" = "Family Unit")) # making this demographic variable a little more readable
+```
+
+
+
+# Something new
+
+This is my first time using the package "Plotly" where you can hover over th figure and it is interactive. 
+
+ For my purposes I used it so you could hover and see the exact number of encounters for each facet and for each year. 
+
+```{r encounters, dev"png"}
+p <- ggplot(demographic_data, aes(x = as.factor(fiscal_year), # making year a factor so it goes in order
+                                  y = total_encounters, 
+                                  fill = demographic, 
+                                  text = paste("Total Encounters:", scales::comma(total_encounters))
+                                  )) + # added this so when you hover it only shows total and with commas encounters
+  geom_bar(stat = "identity", position = "dodge") + # how bar plot will how
+  facet_wrap(~ demographic, scales = "free_y") + # faceting by demographic with free y axis
+  labs(title = "Total Encounters by Demographic and Fiscal Year", # creating new label names 
+       x = "Fiscal Year", 
+       y = "Total Encounters",
+       fill= "Demographic") +
+  scale_fill_brewer(palette = "Dark2")+
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) #angeled x axis labels 
+
+
+interactive_plot <- ggplotly(p, tooltip = "text") # tells that it only wants text appeared from above so it only shows total encounters and with the commas
+interactive_plot # to dispay the figure
+```
+
